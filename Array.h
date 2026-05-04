@@ -84,7 +84,7 @@ public:
         return minVal;
     }
 
-    //insert
+    //insert elements into array
     //add to end of deck
     virtual void add(TYPE value){
         if (this->size == this->capacity) {
@@ -146,10 +146,13 @@ public:
     }
 
     // Remove Methods
+
+    //Remove last element
     void remove() {
         this->size--;
     }
 
+    //remove element [i]
     void remove(int index) {
         for(int i = index; i < this->size - 1; i++){
             this->data[i] = this->data[i + 1];
@@ -158,12 +161,12 @@ public:
     }
 
     //linear search
-    virtual TYPE find(TYPE value) {
+    virtual int find(TYPE value) {
         //loop through array
         for (int i=0; i<this->size; i++) {
             //if index is found
             if (this->data[i] == value)
-                return this->data[i];
+                return i;
         }
         //if its not found
         return -1;

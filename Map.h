@@ -12,6 +12,10 @@ struct Pair {
         this->value = v;
     }
     Pair(){}
+
+    bool operator==(Pair<KEY, VALUE> right) {
+        return this->key == right.key;
+    }
 };
 
 template <typename KEY, typename VALUE>
@@ -103,7 +107,7 @@ public:
                     }
                     //add pair to new store
                     pair = Pair(ogStore[i]->read(j).key, ogStore[i]->read(j).value);
-                    this->store[index]->append(pair);
+                    this->store[index]->add(pair);
                 }
             }
         }
@@ -117,10 +121,10 @@ public:
         delete[] ogStore;
     }
     //get function
-    VALUE find(KEY key) {
+    VALUE get(KEY key) {
         int index = hash(key);
 
-        //loop through bucket at location to find pair with key
+        //loop through bucket at location to get pair with key
         if (this->store[index] != nullptr) {
             for (int i=0; i<this->store[index]->len(); i++) {
                 //check to see if matching
@@ -129,12 +133,12 @@ public:
                 }
             }
         }
-        return nullptr;
+        return (VALUE)NULL;
     }
     //add function
     void add(KEY key, VALUE value) {
         //check size
-        if (this->size >= this-> capacity) {
+        if (this->size >= this-> capacity * 0.7) {
             this->resize();
         }
 
@@ -148,7 +152,7 @@ public:
         Pair<KEY, VALUE> pair(key, value);
 
         //insert pair into bucket at index location
-        this->store[index]->append(pair);
+        this->store[index]->insert(pair);
 
         //update size
         this->size++;

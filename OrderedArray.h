@@ -14,7 +14,7 @@ public:
         if (this->size == this->capacity) {
             this->resize();
         }
-        //find correct index
+        //get correct index
         int index = 0;
         for (int i=0; this->data[i] < value && i < this->size; i++) {
             index=i;
@@ -48,7 +48,7 @@ public:
         return TYPE();
     }
 
-    //find max value
+    //get max value
     TYPE findMax() {
         return this->data[this->size-1];
     }
