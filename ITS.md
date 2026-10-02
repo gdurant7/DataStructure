@@ -95,28 +95,28 @@ Options for each design point:
 
 - **Which structures:** all of them, or only some (e.g. the linked lists).
 - **Where the iterator code goes:**
-    - One shared `Iterator.h` (must avoid circular includes; see below).
-    - Each iterator in its own container's header.
-    - A class nested inside each container (e.g. `Array<int>::Iterator`); names can never clash.
+  - One shared `Iterator.h` (must avoid circular includes; see below).
+  - Each iterator in its own container's header.
+  - A class nested inside each container (e.g. `Array<int>::Iterator`); names can never clash.
 - **Names (if not nested):** e.g. `ArrayIterator`, `ListIterator`, `dllIterator`, `TreeIterator`, `MapIterator`, `ordered_mapIterator`. ordered_map could also reuse `ArrayIterator<Pair<KEY, VALUE>>`.
 - **Operations:**
-    - Traversal only: `begin()`, `end()`, `++`, `*`.
-    - Traversal plus `insert(iterator, value)` and `remove(iterator)`.
+  - Traversal only: `begin()`, `end()`, `++`, `*`.
+  - Traversal plus `insert(iterator, value)` and `remove(iterator)`.
 - **Moving backward (`--`):**
-    - Only where natural: Array, OrderedArray, DoubleLinkedList, ordered_map.
-    - Everywhere: LinkedList has no `prev` link, Map buckets are unordered, and `trNode` has no parent link, so these would need extra work or new members.
+  - Only where natural: Array, OrderedArray, DoubleLinkedList, ordered_map.
+  - Everywhere: LinkedList has no `prev` link, Map buckets are unordered, and `trNode` has no parent link, so these would need extra work or new members.
 - **What `remove(iterator)` returns:** `bool`, or an iterator to the next element (standard library style; allows removing inside a loop).
 - **What `insert(iterator, value)` returns:** a node pointer, an iterator to the new element, or `bool`.
 - **Structures that choose their own order (OrderedArray, Tree, Map, ordered_map):** inserting at a position can break the ordering. Options: leave out `insert(iterator, value)`, include it but ignore the position, or include it and do nothing.
 - **OrderedArray inherits Array's `insert(iterator, value)`** if Array gets one. Options: override it in OrderedArray to do nothing, or allow it.
 - **Singly linked list position:** inserting or removing at a position needs the previous node. Options: `insert_after(iterator, value)` / `remove_after(iterator)` (like `std::forward_list`), or the iterator also tracks the previous node.
 - **Invalidation after resize (Array, Map, ordered_map):** a resize moves the data. Options:
-    - Standard behavior: iterators become invalid after a resize (like `vector`).
-    - Index-based: iterator stores the container and an index; survives a resize automatically.
-    - Manual `update()`: iterator stores an element pointer, the container, and an index; the caller calls `update()` after a resize. Forgetting it leaves a dangling pointer.
-    - Container tracks all live iterators and updates them on resize: needs a new data member and adds overhead.
-    - None of these correct for shifts: after an earlier insert/remove, an index-based position points to whatever value is now there.
-    - Map rehashes pairs into different buckets on resize, so any update must find the pair again by key.
+  - Standard behavior: iterators become invalid after a resize (like `vector`).
+  - Index-based: iterator stores the container and an index; survives a resize automatically.
+  - Manual `update()`: iterator stores an element pointer, the container, and an index; the caller calls `update()` after a resize. Forgetting it leaves a dangling pointer.
+  - Container tracks all live iterators and updates them on resize: needs a new data member and adds overhead.
+  - None of these correct for shifts: after an earlier insert/remove, an index-based position points to whatever value is now there.
+  - Map rehashes pairs into different buckets on resize, so any update must find the pair again by key.
 - **Circular includes:** if a shared `Iterator.h` includes container headers while containers include it, compilation fails. Option: `Iterator.h` uses only forward declarations (`Node`, `dllNode`, `trNode`, `Pair`) and pointers, with each container a `friend` of its iterator.
 - **Stack and Queue inherit Array's iterators,** including insert/remove at a position, which allows changing the middle of a stack or queue. Options: allow it, or hide/disable those methods in Stack and Queue.
 - **Removal missing:** Tree and Map have no remove function. `remove(iterator)` (or a value-based remove) needs binary search tree deletion (node with zero, one, or two children) for Tree and bucket removal for Map.
@@ -133,6 +133,65 @@ Options for each design point:
 3. Stack-based with its own small built-in stack (a resizable array of node pointers inside the iterator). No include problem.
 4. Not stack-based: keep a pointer to the root and find the next node by walking down from the root each step. O(height) per step, no extra structure.
 5. Add a parent pointer to `trNode` so the iterator can move up the tree. Requires a new data member.
+
+### 6. Missing data structures
+
+**DeckQueue**
+
+Issue: Queue.h only adds to the back and removes from the front. There is no structure designed to add and remove at both ends (front and back).
+
+Options:
+- Inherit from Array, like Queue. Adding/removing at the front shifts every element (O(n)).
+- Build on DoubleLinkedList (`List`). Adding/removing at either end is O(1).
+- Circular array (front and back indexes that wrap around). Both ends O(1), no shifting; needs its own resize logic.
+
+**priorityQueue**
+
+Issue: there is no structure that always removes the highest- (or lowest-) priority item first.
+
+Options:
+- Build on OrderedArray. Insert O(n) (shifting), remove top O(1).
+- Binary heap stored in an Array. Insert and remove top O(log n).
+- Unsorted Array. Insert O(1), remove top O(n) (must search for it).
+- For any option: decide whether the top is the largest or the smallest value, and whether items are values or (priority, value) pairs.
+
+**Sets**
+
+Issue: there is no structure that stores unique values only (no duplicates) and answers "is this value present?".
+
+Options:
+- Hash set (unordered, like `std::unordered_set`): build like Map but store values only. Add, find, remove average O(1).
+- Ordered set (sorted, like `std::set`): build on OrderedArray (find O(log n), insert O(n)), or on Tree / a balanced tree (O(log n) when balanced).
+- For any option: decide whether adding an existing value is ignored or reported.
+
+**Heap**
+
+Issue: there is no binary heap as a standalone structure (also the usual base for priorityQueue).
+
+Options:
+- Binary heap stored in an Array (parent at `i`, children at `2i + 1` and `2i + 2`). Insert and remove top O(log n), read top O(1).
+- Min-heap (smallest on top) or max-heap (largest on top).
+- Inherit from Array (exposes all Array methods, which can break heap order) or contain an Array as a member.
+- Optional: heap sort as an Array sorting method, alongside bubble and selection sort.
+
+**Graph**
+
+Issue: there is no structure for vertices connected by edges.
+
+Options:
+- Adjacency list (each vertex keeps a list of neighbors): memory grows with the number of edges; good for sparse graphs. Could build on Map, Array, or LinkedList.
+- Adjacency matrix (2D grid of yes/no or weights): O(1) edge check; memory O(V²); good for dense graphs.
+- Directed or undirected; weighted or unweighted.
+- Traversals often included: breadth-first search (uses Queue) and depth-first search (uses Stack or recursion).
+
+**Balanced trees**
+
+Issue: Tree.h is a plain binary search tree. Inserting values in sorted order makes it a long chain, so search and insert slow to O(n).
+
+Options:
+- AVL tree: rebalances with rotations after each insert/remove; strict balance, fastest lookups.
+- Red-black tree: looser balance, fewer rotations; what `std::map` and `std::set` usually use.
+- Either option needs extra data in each node (height for AVL, color for red-black), so it would use a new node type or new members in `trNode`.
 
 ---
 
