@@ -29,7 +29,6 @@ int main() {
     sports.insert("golf", 5);
     sports.insert("bowling", 6);
     sports.print();
-    sports.remove("");
     sports.search("baseball");
     sports.print();
 

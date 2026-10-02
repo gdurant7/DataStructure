@@ -11,7 +11,7 @@ struct Node {
     Node* next;
 
     Node() {
-        value = nullptr;
+        value = TYPE();
         next = nullptr;
     }
 
@@ -36,6 +36,15 @@ public:
     LinkedList(TYPE value) {
         this -> head = new Node<TYPE>(value);
     }
+    // Destructor
+    ~LinkedList() {
+        Node<TYPE>* current = this->head;
+        while (current != nullptr) {
+            Node<TYPE>* nextNode = current->next;
+            delete current;
+            current = nextNode;
+        }
+    }
     TYPE read(int index) {
         Node<TYPE>* current = this->head;
         for (int i=0; i<index; i++) {
@@ -53,16 +62,20 @@ public:
     }
 
     void insert(TYPE value, int index) {
+        Node<TYPE>* newNode = new Node<TYPE>(value);
+        //empty list or insert at front
+        if (this->head == nullptr || index <= 0) {
+            newNode->next = this->head;
+            this->head = newNode;
+            return;
+        }
+        //move to node before index, stop at last node
         Node<TYPE>* current = this->head;
         for (int i=0; i<index-1 && current->next != nullptr; i++) {
             current = current -> next;
         }
-        Node<TYPE>* newNode = new Node<TYPE>(value); {
-            if (index == 0) {
-                newNode->next = current->next;
-                current->next = newNode;
-            }
-        }
+        newNode->next = current->next;
+        current->next = newNode;
     }
 
     void remove(int index) {
@@ -84,21 +97,30 @@ public:
         }
     }
 
-    void remove(TYPE value) {
-        Node<TYPE>* current = this->search(value);
-        if (current != nullptr) {
+    void removeValue(TYPE value) {
+        //empty list
+        if (this->head == nullptr) {
+            return;
+        }
+        //value is at head
+        if (this->head->value == value) {
+            Node<TYPE>* markedtoRemove = this->head;
+            this->head = this->head->next;
+            delete markedtoRemove;
+            return;
+        }
+        //find node before the one holding value
+        Node<TYPE>* current = this->head;
+        while (current->next != nullptr && current->next->value != value) {
+            current = current->next;
+        }
+        //value not found
+        if (current->next == nullptr) {
             return;
         }
         Node<TYPE>* markedtoRemove = current->next;
-        if (current == this->head) {
-            this->head = markedtoRemove;
-            delete current;
-        }
-        else {
-            current->next = current->next->value;
-            current->next = markedtoRemove->next;
-            delete markedtoRemove;
-        }
+        current->next = markedtoRemove->next;
+        delete markedtoRemove;
     }
 
     void print() {

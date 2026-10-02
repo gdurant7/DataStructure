@@ -1,6 +1,8 @@
 #ifndef DATASTRUCTURE_MAP_H
 #define DATASTRUCTURE_MAP_H
 
+#include <optional>
+#include <string>
 #include "Array.h"
 
 template <typename KEY, typename VALUE>
@@ -15,6 +17,14 @@ struct Pair {
 
     bool operator==(Pair<KEY, VALUE> right) {
         return this->key == right.key;
+    }
+
+    bool operator<(Pair<KEY, VALUE> right) {
+        return this->key < right.key;
+    }
+
+    bool operator>(Pair<KEY, VALUE> right) {
+        return this->key > right.key;
     }
 };
 
@@ -40,6 +50,50 @@ public:
 
     Map() : Map(10) {}
 
+    // Copy Constructor
+    Map(const Map<KEY, VALUE>& other){
+        this->size = other.size;
+        this->capacity = other.capacity;
+        this->startingCapacity = other.startingCapacity;
+        this->store = new Array<Pair<KEY, VALUE>>*[this->capacity];
+        for(int i = 0; i < this->capacity; i++){
+            if(other.store[i] != nullptr){
+                this->store[i] = new Array<Pair<KEY, VALUE>>(*other.store[i]);
+            }
+            else {
+                this->store[i] = nullptr;
+            }
+        }
+    }
+
+    // Copy Assignment
+    Map<KEY, VALUE>& operator=(const Map<KEY, VALUE>& other){
+        if(this != &other){
+            // Copy buckets into a new store
+            Array<Pair<KEY, VALUE>>** newStore = new Array<Pair<KEY, VALUE>>*[other.capacity];
+            for(int i = 0; i < other.capacity; i++){
+                if(other.store[i] != nullptr){
+                    newStore[i] = new Array<Pair<KEY, VALUE>>(*other.store[i]);
+                }
+                else {
+                    newStore[i] = nullptr;
+                }
+            }
+            // Delete the original store
+            for(int i = 0; i < this->capacity; i++){
+                if(store[i] != nullptr){
+                    delete store[i];
+                }
+            }
+            delete[] this->store;
+            this->store = newStore;
+            this->size = other.size;
+            this->capacity = other.capacity;
+            this->startingCapacity = other.startingCapacity;
+        }
+        return *this;
+    }
+
     // Destructor
     ~Map(){
         for(int i = 0; i < this->capacity; i++){
@@ -55,23 +109,31 @@ public:
 
     // int keys
     int hash(int key){
-        return key % this->capacity;
+        int index = key % this->capacity;
+        if (index < 0) {
+            index += this->capacity;
+        }
+        return index;
     }
 
     // double keys
     int hash(double key){
-        return int(key * 1000000) % this->capacity;
+        int index = int(key * 1000000) % this->capacity;
+        if (index < 0) {
+            index += this->capacity;
+        }
+        return index;
     }
 
     //char keys
     int hash(char key) {
-        return (int)key % this->capacity;
+        return (unsigned char)key % this->capacity;
     }
     // string keys
     int hash(string key){
-        int value = 0;
+        unsigned int value = 0;
         for(int i = 0; i < key.size(); i++){
-            value += (i + 1) * (int)key[i];
+            value += (unsigned int)(i + 1) * (unsigned char)key[i];
         }
         return value % this->capacity;
     }
@@ -121,7 +183,7 @@ public:
         delete[] ogStore;
     }
     //get function
-    VALUE get(KEY key) {
+    optional<VALUE> get(KEY key) {
         int index = hash(key);
 
         //loop through bucket at location to get pair with key
@@ -133,17 +195,31 @@ public:
                 }
             }
         }
-        return (VALUE)NULL;
+        return nullopt;
     }
     //add function
     void add(KEY key, VALUE value) {
+        //hash key to find index
+        int index = hash(key);
+
+        //if key already exists, update its value
+        if (this->store[index] != nullptr) {
+            for (int i=0; i<this->store[index]->len(); i++) {
+                if (this->store[index]->read(i).key == key) {
+                    this->store[index]->remove(i);
+                    this->store[index]->insert(Pair<KEY, VALUE>(key, value));
+                    return;
+                }
+            }
+        }
+
         //check size
         if (this->size >= this-> capacity * 0.7) {
             this->resize();
+            //capacity changed, hash key again
+            index = hash(key);
         }
 
-        //hash key to findin
-        int index = hash(key);
         //check to see if bucket exists
         if (this->store[index]==nullptr) {
             this->store[index] = new Array< Pair<KEY, VALUE>>();
@@ -169,18 +245,16 @@ public:
                 //check bucket and print item
                 for (int j=0; j<this->store[i]->len(); j++) {
                     cout << "(" << this->store[i]->read(j).key
-                    << cout << "," << this->store[i]->read(j).value << ")- ";
+                    << "," << this->store[i]->read(j).value << ")- ";
                 }
-                cout << endl;
             }
+            cout << endl;
         }
     }
 
     //check if key exists
     bool isKey(KEY key) {
-        int index = hash(key);
-        int result = this->store[index]->search(key);
-        return result != -1;
+        return this->get(key).has_value();
     }
 
 };

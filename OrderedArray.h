@@ -16,27 +16,27 @@ public:
         }
         //get correct index
         int index = 0;
-        for (int i=0; this->data[i] < value && i < this->size; i++) {
-            index=i;
+        while (index < this->size && this->data[index] < value) {
+            index++;
         }
         for ( int i = this->size; i > index; i--) {
             this->data[i] = this->data[i-1];
         }
         this->data[index] = value;
+        this->size++;
     }
     void insert(TYPE value, int index) {
         this->insert(value);
-        this->size++;
     }
 
     //binary search
-    TYPE find(TYPE target) override {
+    int find(TYPE target) override {
         int l=0;
         int r= this->size-1;
         while (l <= r) {
             int m = l + (r-l)/2;
             if (this->data[m]==target) {
-                return this->data[m];
+                return m;
             }
             if ( this->data[m] < target ) {
                 l = m+1;
@@ -45,7 +45,7 @@ public:
                 r = m-1;
             }
         }
-        return TYPE();
+        return -1;
     }
 
     //get max value

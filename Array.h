@@ -26,7 +26,36 @@ public:
 
     Array() : Array(10, 10) {}
 
-    ~Array() {
+    // Copy Constructor
+    Array(const Array<TYPE>& other) {
+        this->size = other.size;
+        this->capacity = other.capacity;
+        this->multiplier = other.multiplier;
+        this->data = new TYPE[this->capacity];
+        for(int i = 0; i < this->size; i++){
+            this->data[i] = other.data[i];
+        }
+    }
+
+    // Copy Assignment
+    Array<TYPE>& operator=(const Array<TYPE>& other) {
+        if (this != &other) {
+            // Copy into a new underlying array
+            TYPE* newData = new TYPE[other.capacity];
+            for(int i = 0; i < other.size; i++){
+                newData[i] = other.data[i];
+            }
+            // Delete the original array
+            delete[] this->data;
+            this->data = newData;
+            this->size = other.size;
+            this->capacity = other.capacity;
+            this->multiplier = other.multiplier;
+        }
+        return *this;
+    }
+
+    virtual ~Array() {
         delete[] this->data;
     }
 
@@ -68,7 +97,7 @@ public:
         TYPE maxVal = this->data[0];
         for (int i=1; i<this->size; i++) {
             if (maxVal < this->data[i]) {
-                maxVal = this-data[i];
+                maxVal = this->data[i];
             }
         }
         return maxVal;
@@ -91,19 +120,6 @@ public:
             this->resize();
         }
         this->data[this->size]=value;
-        this->size++;
-    }
-    //add to start
-    virtual void add(TYPE value, int index){
-        if (this->size == this->capacity) {
-            this->resize();
-        }
-        //shift elements from end up to desired indes
-        for (int i=this->size; i>0; i--) {
-            this->data[i]=this->data[i-1];
-        }
-        //replace value at index location
-        this->data[index]=value;
         this->size++;
     }
     //insert

@@ -10,4 +10,7 @@ add_executable(DataStructure main.cpp
         Stack.h
         Linter.h
         Queue.h
-        LinkedList.h)
+        LinkedList.h
+        Ordered_map.h
+        DoubleLinkedList.h
+        Tree.h)
