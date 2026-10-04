@@ -8,35 +8,35 @@ Line numbers refer to the files as of this ITS.md version.
 
 ### 1. Invalid inputs (documented only, not handled)
 
-| File | Line | Function | Invalid input | Current behavior |
-|---|---|---|---|---|
-| Array.h | 16 | `Array(int capacity, double multiplier)` | capacity ≤ 0, or multiplier ≤ 1 | `resize()` (line 77) does not grow the array; the next `add`/`insert` writes past the end |
-| Array.h | 92 | `read(int index)` | index < 0 or index ≥ size | Reads outside the stored values or outside the array |
-| Array.h | 96 | `findMax()` | empty array | Returns an uninitialized `data[0]` |
-| Array.h | 106 | `findMin()` | empty array | Returns an uninitialized `data[0]` |
-| Array.h | 136 | `insert(TYPE value, int index)` | index < 0 or index > size | Writes outside the array, or leaves a gap of unset values |
-| Array.h | 150 | `swap(int index1, int index2)` | negative index | Only checks `< size`; a negative index reads/writes before the array |
-| Array.h | 158 | `static swap(...)` | any out-of-range index | No checks; reads/writes outside either array |
-| Array.h | 167 | `remove()` | empty array | `size` becomes negative |
-| Array.h | 172 | `remove(int index)` | index < 0 | Writes before the start of the array |
-| Array.h | 172 | `remove(int index)` | index ≥ size | Silently removes the last element |
-| OrderedArray.h | 52 | `findMax()` | empty array | Reads `data[-1]` |
-| Stack.h | 16 | `pop()` | empty stack | `size` becomes negative |
-| Stack.h | 19 | `read()` | empty stack | Reads `data[-1]` |
-| Queue.h | 15 | `dequeue()` | empty queue | `size` becomes negative |
-| Queue.h | 19 | `read()` | empty queue | Returns an uninitialized `data[0]` |
-| LinkedList.h | 48 | `read(int index)` | index < 0 | Returns the head value |
-| LinkedList.h | 48 | `read(int index)` | empty list, or index ≥ length | Null pointer dereference (crash) |
-| LinkedList.h | 64 | `insert(TYPE value, int index)` | index ≤ 0 / index > length | Inserts at front / appends at end (clamped) |
-| LinkedList.h | 81 | `remove(int index)` | empty list, or index ≥ length | Null pointer dereference (crash) |
-| LinkedList.h | 81 | `remove(int index)` | index < -1 | Removes the second node (crashes if there is only one node); -1 is ignored |
-| DoubleLinkedList.h | 58 | `read(int index)` | empty list | Null pointer dereference (crash) |
-| DoubleLinkedList.h | 58 | `read(int index)` | index < 0 / index ≥ size | Returns the head value / returns `TYPE()` |
-| DoubleLinkedList.h | 79 | `insert(TYPE value, int index)` | index ≤ 0 / index ≥ size | Inserts at front / appends at back (clamped) |
-| DoubleLinkedList.h | 119 | `remove(int index)` | index ≤ 0 / index ≥ size − 1 | Removes the head / removes the tail (clamped) |
-| Map.h | 41 | `Map(int startCap)` | startCap = 0 | Every hash function divides by zero |
-| Map.h | 41 | `Map(int startCap)` | startCap < 0 | `new[]` with a negative size |
-| Map.h | 120 | `hash(double key)` | \|key × 1,000,000\| larger than the `int` range, or NaN | Integer overflow (undefined behavior) |
+| File | Line | Function | Invalid input | Current behavior | Demonstrated in main.cpp (commented out) |
+|---|---|---|---|---|---|
+| Array.h | 16 | `Array(int capacity, double multiplier)` | capacity ≤ 0, or multiplier ≤ 1 | `resize()` (line 77) does not grow the array; the next `add`/`insert` writes past the end | line 123: `Array<int> a(0, 2.0); a.add(1);`; line 124: `Array<int> a(2, 1.0); … a.add(3);` |
+| Array.h | 92 | `read(int index)` | index < 0 or index ≥ size | Reads outside the stored values or outside the array | line 125: `a.read(-1)`; line 126: `a.read(5)` |
+| Array.h | 96 | `findMax()` | empty array | Returns an uninitialized `data[0]` | line 127: `a.findMax()` |
+| Array.h | 106 | `findMin()` | empty array | Returns an uninitialized `data[0]` | line 128: `a.findMin()` |
+| Array.h | 136 | `insert(TYPE value, int index)` | index < 0 or index > size | Writes outside the array, or leaves a gap of unset values | line 129: `a.insert(9, 3)`; line 130: `a.insert(9, -1)` |
+| Array.h | 150 | `swap(int index1, int index2)` | negative index | Only checks `< size`; a negative index reads/writes before the array | line 131: `a.swap(-1, 0)` |
+| Array.h | 158 | `static swap(...)` | any out-of-range index | No checks; reads/writes outside either array | line 132: `Array<int>::swap(a, 50, b, 0)` |
+| Array.h | 167 | `remove()` | empty array | `size` becomes negative | line 133: `a.remove()` |
+| Array.h | 172 | `remove(int index)` | index < 0 | Writes before the start of the array | line 134: `a.remove(-1)` |
+| Array.h | 172 | `remove(int index)` | index ≥ size | Silently removes the last element | line 135: `a.remove(10)` |
+| OrderedArray.h | 52 | `findMax()` | empty array | Reads `data[-1]` | line 189: `a.findMax()` |
+| Stack.h | 16 | `pop()` | empty stack | `size` becomes negative | line 327: `s.pop()` |
+| Stack.h | 19 | `read()` | empty stack | Reads `data[-1]` | line 328: `s.read()` |
+| Queue.h | 15 | `dequeue()` | empty queue | `size` becomes negative | line 398: `q.dequeue()` |
+| Queue.h | 19 | `read()` | empty queue | Returns an uninitialized `data[0]` | line 399: `q.read()` |
+| LinkedList.h | 48 | `read(int index)` | index < 0 | Returns the head value | line 466: `t.read(-1)` |
+| LinkedList.h | 48 | `read(int index)` | empty list, or index ≥ length | Null pointer dereference (crash) | line 467: `t.read(5)`; line 468: `t.read(0)` |
+| LinkedList.h | 64 | `insert(TYPE value, int index)` | index ≤ 0 / index > length | Inserts at front / appends at end (clamped) | line 469: `t.insert("front", -5)`; line 470: `t.insert("end", 99)` |
+| LinkedList.h | 81 | `remove(int index)` | empty list, or index ≥ length | Null pointer dereference (crash) | line 471: `t.remove(0)`; line 472: `t.remove(5)` |
+| LinkedList.h | 81 | `remove(int index)` | index < -1 | Removes the second node (crashes if there is only one node); -1 is ignored | line 473: `t.remove(-1)`; line 474: `t.remove(-2)` |
+| DoubleLinkedList.h | 58 | `read(int index)` | empty list | Null pointer dereference (crash) | line 525: `t.read(0)` |
+| DoubleLinkedList.h | 58 | `read(int index)` | index < 0 / index ≥ size | Returns the head value / returns `TYPE()` | line 526: `t.read(-1)`; line 527: `t.read(99)` |
+| DoubleLinkedList.h | 79 | `insert(TYPE value, int index)` | index ≤ 0 / index ≥ size | Inserts at front / appends at back (clamped) | line 528: `t.insert("front", -3)`; line 529: `t.insert("back", 99)` |
+| DoubleLinkedList.h | 119 | `remove(int index)` | index ≤ 0 / index ≥ size − 1 | Removes the head / removes the tail (clamped) | line 530: `t.remove(-5)`; line 531: `t.remove(99)` |
+| Map.h | 41 | `Map(int startCap)` | startCap = 0 | Every hash function divides by zero | line 244: `Map<string, string> m(0); m.add("a", "b");` |
+| Map.h | 41 | `Map(int startCap)` | startCap < 0 | `new[]` with a negative size | line 245: `Map<string, string> m(-1);` |
+| Map.h | 120 | `hash(double key)` | \|key × 1,000,000\| larger than the `int` range, or NaN | Integer overflow (undefined behavior) | line 246: `m.hash(1e10)`; line 247: `m.hash(nan(""))` |
 
 ### 2. Return type undecided
 
@@ -212,6 +212,15 @@ Untested structures (no tests in main.cpp):
 ---
 
 ## Testing/QA
+
+main.cpp now has tests for Array, OrderedArray, Map, ordered_map, Stack, Queue, Linter, LinkedList, List (DoubleLinkedList.h) and Tree. Each prints a label, the expected result and the actual result. Invalid-input cases are commented out in a block at the end of each structure's test (remove the `//` on one line to run it); section 1 has a column with the main.cpp line for each.
+
+Observed when each commented-out case was run alone (g++ 13, C++23, Linux):
+- Crash: main.cpp 244 (`Map(0)`, divide by zero), 245 (`Map(-1)`, throws `bad_array_new_length`), 467, 468, 471, 472 (LinkedList null dereference), 525 (List `read(0)` on an empty list).
+- Abort with "double free or corruption" when the array is freed: 130 (`insert(9, -1)`), 131 (`swap(-1, 0)`), 134 (`remove(-1)`).
+- Garbage or unpredictable values printed (undefined behavior): 126, 127, 128, 399; 125, 132, 189, 246, 247 and 328 print without crashing but read or write outside the array or overflow an `int`.
+- Defined results as documented: 123, 124 (no visible failure), 129 (gap of unset values), 133 and 327 and 398 (size becomes -1), 135, 466, 469, 470, 473, 474, 526 to 531.
+- Tree.h has no documented invalid inputs, so it has no commented-out block. Tree's root is private, so main.cpp checks it with `search` and a small `describe` helper that prints a node's children.
 
 ---
 
