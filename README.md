@@ -53,6 +53,16 @@ Each test prints a label, the expected result, and the actual result so you can 
 
 Most tests end with a commented-out block of invalid-input cases. Remove the `//` (or the `/* */` markers) on one case to run it.
 
+## AI Use
+
+All of the code and implemented data structures in this project were written without the use of AI and will continue to do so.
+
+AI will only be used only as a reviewer. It helps find:
+
+- errors in the code
+- structural issues in the design
+- possible problems with how the data structures behave
+
 ## Known Issues and Planned Work
 
 Known issues, open design decisions, and planned structures are tracked in [ITS.md](ITS.md).
